@@ -1,0 +1,4 @@
+# 依赖说明
+# 本插件不需要额外 pip 依赖：
+# - aiosqlite、Pillow 随 AstrBot 运行时提供；
+# - tools/migrate_legacy.py 是可选脚本，使用前需要安装 anthropic。

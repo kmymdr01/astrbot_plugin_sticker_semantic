@@ -1,0 +1,9 @@
+name: astrbot_plugin_sticker_semantic
+display_name: 语义表情包
+desc: 独立的表情包分类与语境化发送：自动学习/导入、视觉模型打标签、轻回复只发表情包、普通回复按语境附加。
+version: 1.3.0
+author: kmymdr01
+repo: "https://github.com/kmymdr01/astrbot_plugin_sticker_semantic"
+pages:
+  - name: stickers
+    title: 表情包管理

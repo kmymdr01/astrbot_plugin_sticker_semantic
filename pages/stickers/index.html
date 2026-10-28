@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>表情包管理</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --panel-2: #f1f3f8;
+      --text: #172033;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #4f46e5;
+      --primary-2: #6366f1;
+      --ok: #059669;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 10px 30px rgba(15, 23, 42, .08);
+      --radius: 14px;
+    }
+    html[data-theme="dark"] {
+      --bg: #0f1117;
+      --panel: #171a23;
+      --panel-2: #202431;
+      --text: #e8ecf5;
+      --muted: #9aa3b2;
+      --line: #2a3040;
+      --shadow: 0 10px 30px rgba(0, 0, 0, .3);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .app { max-width: 1280px; margin: 0 auto; padding: 20px 20px 40px; }
+    header { margin-bottom: 16px; }
+    .head-row { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+    h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -.02em; }
+    .subtitle { color: var(--muted); margin: 0; }
+    .head-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      transition: .15s ease;
+      white-space: nowrap;
+    }
+    .btn:hover { border-color: var(--primary-2); transform: translateY(-1px); }
+    .btn.primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; color: #fff; }
+    .btn.danger { color: var(--danger); }
+    .btn.ghost { background: transparent; }
+    .btn.small { padding: 5px 9px; font-size: 12px; border-radius: 8px; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .inbox {
+      margin-top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px 14px 14px;
+    }
+    .inbox-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+    .inbox-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .inbox-title .count {
+      font-size: 12px; min-width: 22px; padding: 2px 7px; border-radius: 999px;
+      background: var(--warn); color: #fff; text-align: center;
+    }
+    .inbox-actions { display: flex; gap: 6px; }
+    .inbox-list { display: flex; gap: 10px; overflow-x: auto; padding: 10px 2px 2px; min-height: 58px; }
+    .inbox-empty { color: var(--muted); padding: 18px 2px 6px; font-size: 13px; }
+    .inbox-card {
+      display: flex; gap: 9px; align-items: center;
+      min-width: 235px; max-width: 280px;
+      border: 1px solid var(--line); border-radius: 10px; padding: 8px;
+      background: var(--panel-2);
+    }
+    .inbox-thumb {
+      width: 58px; height: 58px; flex: 0 0 58px; border-radius: 8px;
+      object-fit: cover; background: var(--panel);
+    }
+    .inbox-info { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .inbox-desc {
+      font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .inbox-tags { display: flex; gap: 3px; flex-wrap: wrap; }
+    .inbox-tags .tag { font-size: 10px; padding: 1px 5px; }
+    .inbox-card-actions { display: flex; gap: 4px; }
+    .inbox-card-actions .btn { padding: 4px 7px; font-size: 11px; border-radius: 7px; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .stat b { display: block; font-size: 22px; line-height: 1.1; }
+    .stat span { color: var(--muted); font-size: 12px; }
+    .stat.active { outline: 2px solid var(--primary-2); }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 16px 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 10px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .toolbar input, .toolbar select {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: 9px;
+      padding: 8px 10px;
+      outline: none;
+    }
+    .toolbar input { flex: 1 1 260px; min-width: 180px; }
+    .toolbar input:focus, .toolbar select:focus { border-color: var(--primary-2); }
+    main { min-height: 240px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .card-media {
+      position: relative;
+      aspect-ratio: 1.25 / 1;
+      background: repeating-conic-gradient(var(--panel-2) 0% 25%, transparent 0% 50%) 50% / 18px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .card-media img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .badge {
+      position: absolute; top: 8px; left: 8px;
+      padding: 3px 7px; border-radius: 999px;
+      font-size: 11px; color: #fff; background: rgba(17, 24, 39, .72);
+      backdrop-filter: blur(4px);
+    }
+    .badge.ready { background: rgba(5, 150, 105, .88); }
+    .badge.pending { background: rgba(217, 119, 6, .9); }
+    .badge.disabled { background: rgba(107, 114, 128, .9); }
+    .card-body { padding: 11px 12px 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .desc { font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.7em; }
+    .tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .tag { font-size: 11px; padding: 2px 6px; border-radius: 6px; background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
+    .meta { color: var(--muted); font-size: 11px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .card-actions { display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap; }
+    .loading, .empty {
+      padding: 44px 16px; text-align: center; color: var(--muted);
+      background: var(--panel); border: 1px dashed var(--line); border-radius: var(--radius);
+    }
+    .empty b { display: block; color: var(--text); margin-bottom: 4px; }
+    .pager { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 18px; }
+    .pager span { color: var(--muted); min-width: 80px; text-align: center; }
+    .modal { position: fixed; inset: 0; background: rgba(10, 14, 25, .55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+    .modal[hidden] { display: none; }
+    .modal-card { width: min(760px, 100%); max-height: 92vh; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); z-index: 2; }
+    .modal-head h2 { margin: 0; font-size: 18px; }
+    .modal-head button { border: 0; background: transparent; font-size: 24px; line-height: 1; color: var(--muted); }
+    .modal-body { display: grid; grid-template-columns: 240px 1fr; gap: 18px; padding: 18px; }
+    .preview { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; display: flex; align-items: center; justify-content: center; min-height: 220px; overflow: hidden; align-self: start; }
+    .preview img { width: 100%; height: auto; max-height: 340px; object-fit: contain; }
+    .fields { display: flex; flex-direction: column; gap: 11px; min-width: 0; }
+    .fields label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font-size: 12px; }
+    .field-label { color: var(--muted); font-size: 12px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .tag-picker { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0; }
+    .tag-choice {
+      border: 1px solid var(--line); background: var(--panel-2); color: var(--muted);
+      border-radius: 999px; padding: 4px 10px; font-size: 12px; line-height: 1.2;
+    }
+    .tag-choice:hover { border-color: var(--primary-2); color: var(--text); }
+    .tag-choice.active {
+      background: color-mix(in srgb, var(--primary) 16%, var(--panel));
+      border-color: var(--primary-2); color: var(--text); font-weight: 600;
+    }
+    .fields input[type="text"], .fields input:not([type]), .fields textarea, .fields select {
+      border: 1px solid var(--line); background: var(--panel-2); border-radius: 9px; padding: 8px 10px; color: var(--text); outline: none;
+    }
+    .fields textarea { resize: vertical; min-height: 68px; }
+    .fields input:focus, .fields textarea:focus, .fields select:focus { border-color: var(--primary-2); }
+    .row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+    .row label { flex: 1 1 120px; }
+    .check { flex-direction: row !important; align-items: center; gap: 8px !important; color: var(--text) !important; }
+    .hint { color: var(--muted); font-size: 11px; word-break: break-all; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 18px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--panel); flex-wrap: wrap; }
+    .modal-actions .danger { margin-right: auto; }
+    .toast {
+      position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+      background: #111827; color: #fff; padding: 10px 16px; border-radius: 10px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25); z-index: 80; max-width: min(90vw, 560px);
+    }
+    .toast.error { background: var(--danger); }
+    .toast[hidden] { display: none; }
+    @media (max-width: 720px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .modal-body { grid-template-columns: 1fr; }
+      .preview { min-height: 160px; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .card-body { padding: 9px; }
+      .desc { font-size: 13px; }
+      .card-actions .btn { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="head-row">
+        <div>
+          <h1 id="pageTitle">表情包管理</h1>
+          <p class="subtitle">点卡片编辑描述和关键词；AI 认错图时改这里最有效。</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn ghost" id="safetyBtn">安全过滤：--</button>
+          <button class="btn ghost" id="refreshBtn">刷新</button>
+          <button class="btn primary" id="uploadBtn">上传表情包</button>
+          <input id="fileInput" type="file" accept="image/*" multiple hidden>
+        </div>
+      </div>
+      <section class="inbox" id="inboxSection">
+        <div class="inbox-head">
+          <div>
+            <div class="inbox-title">新加入 <span class="count" id="inboxCount">0</span></div>
+            <div class="hint">自动学习、网页上传和导入的新表情包，先在这里人工确认；确认后才会进入正常库并参与回复。</div>
+          </div>
+          <div class="inbox-actions">
+            <button class="btn small" id="confirmAllBtn">全部确认</button>
+          </div>
+        </div>
+        <div class="inbox-list" id="inboxList"></div>
+      </section>
+      <div class="stats" id="stats"></div>
+    </header>
+
+    <section class="toolbar">
+      <input id="search" type="search" placeholder="搜索 ID / 描述 / 标签 / 关键词…">
+      <select id="statusFilter">
+        <option value="">全部状态</option>
+        <option value="ready">可用</option>
+        <option value="pending">待分类</option>
+        <option value="disabled">已停用</option>
+      </select>
+      <select id="tagFilter"><option value="">全部标签</option></select>
+      <button class="btn ghost" id="reclassifyAll">重新分类全部</button>
+    </section>
+
+    <main>
+      <div class="loading" id="loading">加载中…</div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden>
+        <b>没有匹配的表情包</b>
+        可以上传图片，或调整搜索/筛选条件。
+      </div>
+    </main>
+
+    <footer class="pager">
+      <button class="btn ghost" id="prev">上一页</button>
+      <span id="pageInfo">-</span>
+      <button class="btn ghost" id="next">下一页</button>
+    </footer>
+  </div>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>编辑表情包</h2>
+        <button id="closeModal" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="preview"><img id="editImage" alt="表情包预览"></div>
+        <div class="fields">
+          <label>描述
+            <textarea id="editDescription" rows="3" placeholder="画面内容 + 情绪"></textarea>
+          </label>
+          <div class="field-label">标签 <span class="hint">点击切换；显示中文，底层存英文键</span></div>
+          <div id="tagPicker" class="tag-picker"></div>
+          <div class="hint">改完描述后点“按描述重算标签”，用文字模型重选标签和关键词，不会覆盖描述。</div>
+          <label class="check">
+            <input id="retagKeywords" type="checkbox" checked> 重算时同时更新匹配关键词
+          </label>
+          <label>匹配关键词
+            <input id="editKeywords" placeholder="哈哈哈,笑死,绷不住">
+          </label>
+          <div class="row">
+            <label>用法
+              <select id="editUsage">
+                <option value="both">both（都可以）</option>
+                <option value="reaction">reaction（只单独发）</option>
+                <option value="augment">augment（只跟文字）</option>
+              </select>
+            </label>
+            <label>强度 <span id="intensityValue">3</span>/5
+              <input id="editIntensity" type="range" min="1" max="5" step="1" value="3">
+            </label>
+          </div>
+          <label class="check">
+            <input id="editSafe" type="checkbox"> 标记为安全（允许发送）
+          </label>
+          <label>状态
+            <select id="editStatus">
+              <option value="ready">可用</option>
+              <option value="pending">待分类</option>
+              <option value="disabled">已停用</option>
+            </select>
+          </label>
+          <div class="hint" id="editMeta"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn ghost danger" id="deleteBtn">删除</button>
+        <button class="btn ghost" id="retagBtn">按描述重算标签</button>
+        <button class="btn ghost" id="reclassifyBtn">重新分类</button>
+        <button class="btn ghost" id="cancelBtn">取消</button>
+        <button class="btn primary" id="saveBtn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="/api/plugin/page/bridge-sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
